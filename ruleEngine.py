@@ -1,19 +1,38 @@
 #Definiciones sobre Reglas
 
-#   Statement
+#   GenericStatement
 #       |_childStatements -> StatementCollections
 #       |_eval -> Bool
 
-#   Statement_Construction:
+#   StatementConstruction:
 #       |_with: aStatementCollection and: anOperatorsCollection
 #       |_childStatements <- StatementCollection
 #       |_operators <- OperatorsCollection
 #       |_eval -> Bool
 
-#   Statement_Leaf:
-#       |_with: aRule
+#   GenericRule:
+#       |_with: aRuleCondition
 #       |_childStatements -> self
-#       |_evalRule -> Bool
+#       |_eval -> Bool
+
+#   GenericRangeRule:
+#       |_with: aRange
+#       |_childStatements -> self
+#       |_eval -> Bool
+
+#   TimeRangeRule:
+#       |_with: aTimeRange
+#       |_childStatements -> self
+#       |_eval -> Bool
+
+#   CodeRule:
+#       |_with: aCode
+#       |_childStatements -> self
+#       |_eval -> Bool
+
+#   CodeRangeRule:
+#       |_with: aCodeRange
+#       |_childStatements -> self
 #       |_eval -> Bool
 
 #*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
@@ -26,7 +45,7 @@ class Statement():
     def eval(self, parameter_list):
         raise NotImplementedError
 
-class Statement_Construction():
+class StatementConstruction():
     def __init__(self, aStatementCollection, anOperatorsCollection):
         self._childStatements = aStatementCollection
         self._operators = anOperatorsCollection
@@ -49,16 +68,22 @@ class Statement_Construction():
             else:
                 result = result and statements[i].eval(parameter_list)
 
-class Statement_Leaf():
+class RangeRule():
 
-    def withRule(self, aRule):
-        self._rule = aRule
+    def __init__(self, aRuleCondition):
+        self._range = aRuleCondition['range']
+        self._item = aRuleCondition['item']
+        self._field = aRuleCondition['field']
 
     def statements(self):
         return [self]
 
-    def evalRule(self, parameter_list):
-        return True
+    def eval(self, transaction):
+        item = self._item
+        field = self._field
+        range = self._range
 
-    def eval(self, parameter_list):
-        return self.evalRule(parameter_list)
+        if range['start'] <= range['end']:
+            return range['start'] <= transaction[item][field] <= range['end']
+        else:
+            return range['start'] <= transaction[item][field] or transaction[item][field] <= range['end']

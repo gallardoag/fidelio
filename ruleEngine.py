@@ -60,30 +60,38 @@ class StatementConstruction():
         statements = self.statements()
         operators = self.operators()
         result = statements[0].eval(parameter_list)
-        n = statements.length()
+        n = len(statements)
         i = 1
-        while ((i < n) and result == True):
-            if operators[i] == 'OR':
+        while ((i < n)):
+            if operators[i-1] == 'OR':
                 result = result or statements[i].eval(parameter_list)
             else:
                 result = result and statements[i].eval(parameter_list)
+            i += 1
+        return result
 
 class RangeRule():
 
     def __init__(self, aRuleCondition):
-        self._range = aRuleCondition['range']
-        self._item = aRuleCondition['item']
-        self._field = aRuleCondition['field']
+        self._range = aRuleCondition.range
+        self._field = aRuleCondition.field
 
     def statements(self):
         return [self]
 
     def eval(self, transaction):
-        item = self._item
         field = self._field
         range = self._range
 
-        if range['start'] <= range['end']:
-            return range['start'] <= transaction[item][field] <= range['end']
+        if range.start <= range.end:
+            return range.start <= transaction.__getattribute__(field) <= range.end
         else:
-            return range['start'] <= transaction[item][field] or transaction[item][field] <= range['end']
+            return range.start <= transaction.__getattribute__(field) or transaction.__getattribute__(field) <= range.end
+
+
+class RuleCondition():
+    pass
+class Range():
+    pass
+class Transaction():
+    pass

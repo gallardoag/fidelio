@@ -37,13 +37,54 @@
 
 #*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
-class Statement():
+import operator
 
-    def statements(self, parameter_list):
-        raise NotImplementedError
+operators = {
+'a + b' : operator.add,
+'seq1 + seq2' : operator.concat,
+'obj in seq' : operator.contains,
+'a / b' : operator.truediv,
+'a // b' : operator.floordiv,
+'a & b' : operator.and_,
+'a ^ b' : operator.xor,
+'~ a' : operator.invert,
+'a | b' : operator.or_,
+'a ** b' : operator.pow,
+'a is b' : operator.is_,
+'a is not b' : operator.is_not,
+'obj[k] = v' : operator.setitem,
+'del obj[k]' : operator.delitem,
+'obj[k]' : operator.getitem,
+'a << b' : operator.lshift,
+'a % b' : operator.mod,
+'a * b' : operator.mul,
+'- a' : operator.neg,
+'not a' : operator.not_,
+'+ a' : operator.pos,
+'a >> b' : operator.rshift,
+# 'seq * i' : operator.repeat,
+'seq[i:j] = values' : operator.setitem,
+'del seq[i:j]' : operator.delitem,
+'seq[i:j]' : operator.getitem,
+'s % obj' : operator.mod,
+'a - b' : operator.sub,
+'obj' : operator.truth,
+'a < b' : operator.lt,
+'a <= b' : operator.le,
+'a == b' : operator.eq,
+'a != b' : operator.ne,
+'a >= b' : operator.ge,
+'a > b' : operator.gt,
+}
 
-    def eval(self, parameter_list):
-        raise NotImplementedError
+
+# class Statement():
+
+#     def statements(self, parameter_list):
+#         raise NotImplementedError
+
+#     def eval(self, parameter_list):
+#         raise NotImplementedError
 
 class StatementConstruction():
     def __init__(self, aStatementCollection, anOperatorsCollection):
@@ -83,11 +124,23 @@ class RangeRule():
         field = self._field
         range = self._range
 
-        if range.start <= range.end:
-            return range.start <= transaction.__getattribute__(field) <= range.end
-        else:
-            return range.start <= transaction.__getattribute__(field) or transaction.__getattribute__(field) <= range.end
+        return range.start <= transaction.__getattribute__(field) <= range.end
 
+class ValueRule():
+
+    def __init__(self, aRuleCondition):
+        self._value = aRuleCondition.value
+        self._field = aRuleCondition.field
+        self._operand = aRuleCondition.operand
+
+    def statements(self):
+        return [self]
+
+    def eval(self, transaction):
+        field = self._field
+        value = self._value
+        operand = self._operand
+        return operators[operand](transaction.__getattribute__(field), value)
 
 class RuleCondition():
     pass

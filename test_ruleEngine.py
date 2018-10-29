@@ -7,6 +7,7 @@ class TestRuleMethods(unittest.TestCase):
     
     def setUp(self):
         self.ruleCondition = RuleCondition()
+        self.ruleCondition.operand = 'a in b'
         
         self.dateRange = Range()
         self.dateRange.start = datetime.datetime.now() - datetime.timedelta(days=1)
@@ -57,6 +58,7 @@ class TestRangeRuleMethods(unittest.TestCase):
 
     def setUp(self):
         self.ruleCondition = RuleCondition()
+        self.ruleCondition.operand = 'a in b'
         
         self.dateRange = Range()
         self.dateRange.start = datetime.datetime.now() - datetime.timedelta(days=1)
@@ -94,7 +96,8 @@ class TestCompositionMethods(unittest.TestCase):
 
     def setUp(self):
         self.ruleCondition = RuleCondition()
-        
+        self.ruleCondition.operand = 'a in b'
+
         self.dateRange = Range()
         self.dateRange.start = datetime.datetime.now() - datetime.timedelta(days=1)
         self.dateRange.end = datetime.datetime.now() + datetime.timedelta(days=1)
@@ -117,6 +120,7 @@ class TestCompositionMethods(unittest.TestCase):
         secondRuleCondition = RuleCondition()
         secondRuleCondition.field = 'purchaseAmount'
         secondRuleCondition.range = self.amountRange
+        secondRuleCondition.operand = 'a in b'
         secondRule = RangeRule(secondRuleCondition)
 
         orStatementConstruction = StatementConstruction([firstRule, secondRule], ['OR'])
@@ -139,6 +143,7 @@ class TestCompositionMethods(unittest.TestCase):
         secondRuleCondition = RuleCondition()
         secondRuleCondition.field = 'purchaseAmount'
         secondRuleCondition.range = self.amountRange
+        secondRuleCondition.operand = 'a in b'
         secondRule = RangeRule(secondRuleCondition)
 
         self.transaction.purchaseDate = self.dateRange.start - datetime.timedelta(days=1)
@@ -154,6 +159,7 @@ class TestCompositionMethods(unittest.TestCase):
         secondRuleCondition = RuleCondition()
         secondRuleCondition.field = 'purchaseAmount'
         secondRuleCondition.range = self.amountRange
+        secondRuleCondition.operand = 'a in b'
         secondRule = RangeRule(secondRuleCondition)
 
         orStatementConstruction = StatementConstruction([firstRule, secondRule], ['AND'])
@@ -167,6 +173,7 @@ class TestCompositionMethods(unittest.TestCase):
         secondRuleCondition = RuleCondition()
         secondRuleCondition.field = 'purchaseAmount'
         secondRuleCondition.range = self.amountRange
+        secondRuleCondition.operand = 'a in b'
         secondRule = RangeRule(secondRuleCondition)
 
         self.transaction.purchaseDate = self.dateRange.start - \
@@ -180,6 +187,22 @@ class TestCompositionMethods(unittest.TestCase):
         orStatementConstruction = StatementConstruction(
             [firstRule, secondRule], ['AND'])
         self.assertFalse(orStatementConstruction.eval(self.transaction))
+
+class TestRuleEngine(unittest.TestCase):
+    
+    def test_allRulesGetEvaluated(self):
+        ruleEngine = RuleEngine()
+        valueRuleConditions = RuleCondition()
+        valueSimpleStatement = ValueRule()
+        rangeRuleCondition = RangeRule()
+        rangeSimpleStatement = RangeRule()
+        statementOperator = 'OR'
+        compositeStatement = StatementConstruction(valueSimpleStatement, statementOperator, rangeSimpleStatement)
+        ruleEngine.addStatement(compositeStatement)
+        ruleEngine.addStatement(valueSimpleStatement)
+        ruleEngine.addStatement(rangeSimpleStatement)
+        tx = Transaction()
+        result = ruleEngine.eval(tx)
 
 if __name__ == '__main__':
     unittest.main()

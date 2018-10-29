@@ -35,6 +35,13 @@
 #       |_childStatements -> self
 #       |_eval -> Bool
 
+# class Statement():
+
+#     def statements(self, parameter_list):
+#         raise NotImplementedError
+
+#     def eval(self, parameter_list):
+#         raise NotImplementedError
 #*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
 import operator
@@ -77,15 +84,6 @@ operators = {
 'a > b' : operator.gt,
 }
 
-
-# class Statement():
-
-#     def statements(self, parameter_list):
-#         raise NotImplementedError
-
-#     def eval(self, parameter_list):
-#         raise NotImplementedError
-
 class StatementConstruction():
     def __init__(self, aStatementCollection, anOperatorsCollection):
         self._childStatements = aStatementCollection
@@ -116,6 +114,7 @@ class RangeRule():
     def __init__(self, aRuleCondition):
         self._range = aRuleCondition.range
         self._field = aRuleCondition.field
+        self._operand = aRuleCondition.operand
 
     def statements(self):
         return [self]
@@ -123,8 +122,11 @@ class RangeRule():
     def eval(self, transaction):
         field = self._field
         range = self._range
-
-        return range.start <= transaction.__getattribute__(field) <= range.end
+        result = range.start <= transaction.__getattribute__(field) <= range.end
+        if self._operand == 'a in b':
+            return result
+        else: 
+            return not(result)
 
 class ValueRule():
 
@@ -147,4 +149,7 @@ class RuleCondition():
 class Range():
     pass
 class Transaction():
+    pass
+
+class RuleEngine():
     pass

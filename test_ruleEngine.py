@@ -189,20 +189,57 @@ class TestCompositionMethods(unittest.TestCase):
         self.assertFalse(orStatementConstruction.eval(self.transaction))
 
 class TestRuleEngine(unittest.TestCase):
+
+    def setUp(self):
+        self.ruleEngine = RuleEngine()
+
+        self.valueRuleCondition = RuleCondition()
+        self.valueRuleCondition.field = 'purchaseAmount'
+        self.valueRuleCondition.operand = 'a > b'
+        self.valueRuleCondition.value = 50
+
+        self.dateRange = Range()
+        self.dateRange.start = datetime.datetime.now() - datetime.timedelta(days=1)
+        self.dateRange.end = datetime.datetime.now() + datetime.timedelta(days=1)
+        
+        self.rangeRuleCondition = RuleCondition()
+        self.rangeRuleCondition.field = 'purchaseDate'
+        self.rangeRuleCondition.operand = 'a in b'
+        self.rangeRuleCondition.range = self.dateRange
+
+
+        self.amountRange = Range()
+        self.amountRange.start = 50
+        self.amountRange.end = 150
+
+        self.transaction = Transaction()
+        self.transaction.purchaseDate = datetime.datetime.now()
+        self.transaction.purchaseAmount = 100
+        self.transaction.purchaseCode = 200
+        self.transaction.clientId = 300
     
     def test_allRulesGetEvaluated(self):
-        ruleEngine = RuleEngine()
-        valueRuleConditions = RuleCondition()
-        valueSimpleStatement = ValueRule()
-        rangeRuleCondition = RangeRule()
-        rangeSimpleStatement = RangeRule()
+        valueSimpleStatement = ValueRule(self.valueRuleCondition)
+        rangeSimpleStatement = RangeRule(self.rangeRuleCondition)
         statementOperator = 'OR'
-        compositeStatement = StatementConstruction(valueSimpleStatement, statementOperator, rangeSimpleStatement)
-        ruleEngine.addStatement(compositeStatement)
-        ruleEngine.addStatement(valueSimpleStatement)
-        ruleEngine.addStatement(rangeSimpleStatement)
-        tx = Transaction()
-        result = ruleEngine.eval(tx)
+        statements = [valueSimpleStatement, statementOperator]
+        operators = [statementOperator]
+        compositeStatement = StatementConstruction(statements, operators)
+        self.ruleEngine.addStatement(compositeStatement)
+        self.ruleEngine.addStatement(valueSimpleStatement)
+        self.ruleEngine.addStatement(rangeSimpleStatement)
+        tx = self.transaction
+        result = self.ruleEngine.eval(tx)
+        for ruleEvaluation in result:
+            self.assertTrue(ruleEvaluation)
+
+    def test_givenARuleAndAConsequence_WhenTheRuleApplies_ThenTheConsequenceHappens(self):
+        prepareFunctions()
+        self.ruleEngine.addStatement(statement, consequence)
+        prepareTx()
+        self.ruleEngine.evalAndExecute(tx)
+        checkFunctionsResults()
+
 
 if __name__ == '__main__':
     unittest.main()

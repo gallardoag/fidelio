@@ -42,6 +42,11 @@
 
 #     def eval(self, parameter_list):
 #         raise NotImplementedError
+
+# statement evaluation
+
+# guardar diccionario: Condición -> Consecuencia -> Lista destino
+
 #*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 
 import operator
@@ -152,4 +157,28 @@ class Transaction():
     pass
 
 class RuleEngine():
-    pass
+    
+    def __init__(self):
+        self._statements = []
+
+    def addStatement(self, statement):
+        self._statements.append(statement)
+
+    def eval(self, transaction):
+        results = []
+        for statement in self._statements:
+            result = statement.eval(transaction)
+            results.append(result)
+        return results
+
+    def pointCreation(self, parameter_list):
+        amount = tx * parameter_list.amount_multiplication + parameter_list.fixed_amount
+        expiration_date = today() + parameter_list.expiration_date_offset
+        client = tx[parameter_list.client]
+        point = Point(client, amount, expiration)
+        return parameter_list.channel, point
+
+    def pointModification(self, parameter_list):
+        point = parameter_list.point
+        point[parameter_list.field] = tx * parameter_list.modifier + parameter_list.fixed_modifier
+        return parameter_list.channel, point
